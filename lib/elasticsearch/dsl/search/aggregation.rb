@@ -97,6 +97,12 @@ module Elasticsearch
             {}
           end
         end
+
+
+        def type_name
+          call
+          @value&.name
+        end
       end
 
     end
