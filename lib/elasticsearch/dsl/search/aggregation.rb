@@ -44,7 +44,13 @@ module Elasticsearch
         #
         def method_missing(name, *args, &block)
           klass = Utils.__camelize(name)
-          if Aggregations.const_defined? klass
+          aggregation_defined = nil
+          begin
+            aggregation_defined = Aggregations.const_defined?(klass)
+          rescue NameError
+            aggregation_defined = false
+          end
+          if aggregation_defined
             @value = Aggregations.const_get(klass).new *args, &block
           elsif @block
             @block.binding.eval('self').send(name, *args, &block)
