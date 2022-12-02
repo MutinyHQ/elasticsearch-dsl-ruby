@@ -38,7 +38,13 @@ module Elasticsearch
           #
           def method_missing(name, *args, &block)
             klass = Utils.__camelize(name)
-            if Aggregations.const_defined? klass
+            aggregation_defined = nil
+            begin
+              aggregation_defined = Aggregations.const_defined?(klass)
+            rescue NameError
+              aggregation_defined = false
+            end
+            if aggregation_defined
               @value = Aggregations.const_get(klass).new *args, &block
             elsif @block
               @block.binding.eval('self').send(name, *args, &block)
@@ -66,7 +72,7 @@ module Elasticsearch
           def to_hash(options={})
             call
 
-            unless @hash && @hash[name].respond_to?(:empty?) && !@hash[name].empty?
+            unless @hash && @hash[name] && ! @hash[name].empty?
               args = @args.respond_to?(:to_hash) ? @args.to_hash : @args
               @hash = { name => args }
             end

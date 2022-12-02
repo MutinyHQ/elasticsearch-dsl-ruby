@@ -44,7 +44,13 @@ module Elasticsearch
         #
         def method_missing(name, *args, &block)
           klass = Utils.__camelize(name)
-          if Aggregations.const_defined? klass
+          aggregation_defined = nil
+          begin
+            aggregation_defined = Aggregations.const_defined?(klass)
+          rescue NameError
+            aggregation_defined = false
+          end
+          if aggregation_defined
             @value = Aggregations.const_get(klass).new *args, &block
           elsif @block
             @block.binding.eval('self').send(name, *args, &block)
@@ -84,17 +90,18 @@ module Elasticsearch
         # @return [Hash]
         #
         def to_hash(options={})
-          call
+          @to_hash ||= begin
+            call
 
-          if @value
-            case
-              when @value.respond_to?(:to_hash)
+            if @value
+              if @value.respond_to?(:to_hash)
                 @value.to_hash
               else
                 @value
+              end
+            else
+              {}
             end
-          else
-            {}
           end
         end
 

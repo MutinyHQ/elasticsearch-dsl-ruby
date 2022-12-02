@@ -38,7 +38,13 @@ module Elasticsearch
         #
         def method_missing(name, *args, &block)
           klass = Utils.__camelize(name)
-          if Queries.const_defined? klass
+          query_defined = nil
+          begin
+            query_defined = Queries.const_defined?(klass)
+          rescue NameError
+            query_defined = false
+          end
+          if query_defined
             @value = Queries.const_get(klass).new *args, &block
           elsif @block
            @block.binding.eval('self').send(name, *args, &block)
