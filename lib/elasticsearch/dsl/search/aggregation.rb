@@ -90,17 +90,18 @@ module Elasticsearch
         # @return [Hash]
         #
         def to_hash(options={})
-          call
+          @to_hash ||= begin
+            call
 
-          if @value
-            case
-              when @value.respond_to?(:to_hash)
+            if @value
+              if @value.respond_to?(:to_hash)
                 @value.to_hash
               else
                 @value
+              end
+            else
+              {}
             end
-          else
-            {}
           end
         end
 
