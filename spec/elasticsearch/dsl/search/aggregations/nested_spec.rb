@@ -82,5 +82,30 @@ describe Elasticsearch::DSL::Search::Aggregations::Nested do
         expect(search.to_hash).to eq(nested: { path: 'bar' }, aggregations: { min_price: { min: { field: 'bam' } } })
       end
     end
+
+    context 'deeply nested aggregation' do
+
+      let(:search) do
+        described_class.new do
+          path 'foo'
+          aggregation :more_nested do
+            nested do
+              path 'bar'
+              aggregation :min_price do
+                min field: 'baz'
+              end
+            end
+          end
+        end
+      end
+
+      it 'consistently exposes grandchildren aggregations' do
+        search.to_hash
+        expect(search.aggregations.each_value.first.aggregations).to_not be_nil
+        search.to_hash
+        expect(search.aggregations.each_value.first.aggregations).to_not be_nil
+      end
+
+    end
   end
 end
