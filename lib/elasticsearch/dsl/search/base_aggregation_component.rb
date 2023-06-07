@@ -29,9 +29,6 @@ module Elasticsearch
         end
 
         module InstanceMethods
-
-          attr_reader :aggregations
-
           # Looks up the corresponding class for a method being invoked, and initializes it
           #
           # @raise [NoMethodError] When the corresponding class cannot be found
@@ -51,6 +48,11 @@ module Elasticsearch
             else
               super
             end
+          end
+
+          def aggregations
+            call
+            @aggregations
           end
 
           # Adds a nested aggregation into the aggregation definition
